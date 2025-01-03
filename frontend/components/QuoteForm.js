@@ -1,52 +1,84 @@
-import React from 'react' // 👈 you'll need the reducer hook
+import React, { useReducer } from 'react';
 
-// 👇 these are the types of actions that can change state
-const CHANGE_INPUT = 'CHANGE_INPUT'
-const RESET_FORM = 'RESET_FORM'
+// Action types
+const CHANGE_INPUT = 'CHANGE_INPUT';
+const RESET_FORM = 'RESET_FORM';
 
-// 👇 create your initial state object here
+// Initial state
+const initialState = {
+  authorName: '',
+  quoteText: '',
+};
 
-// 👇 create your reducer function here
-
-export default function TodoForm({ createQuote = () => { } }) {
-  // 👇 use the reducer hook to spin up state and dispatch
-
-  const onChange = () => {
-    // 👇 implement
+// Reducer function
+const reducer = (state, action) => {
+  switch (action.type) {
+    case CHANGE_INPUT: {
+      const { name, value } = action.payload;
+      return { ...state, [name]: value };
+    }
+    case RESET_FORM: {
+      return { authorName: '', quoteText: '' }; // Fixed typo here
+    }
+    default: {
+      return state;
+    }
   }
+};
+
+export default function QuoteForm({ createQuote }) {
+  // Use the reducer hook to manage form state
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  // Handle input changes
+  const onChange = ({ target: { name, value } }) => {
+    dispatch({ type: CHANGE_INPUT, payload: { name, value } }); // Fixed typo here
+  };
+
+  // Reset the form fields
   const resetForm = () => {
-    // 👇 implement
-  }
-  const onNewQuote = () => {
-    // 👇 implement
-    resetForm()
-  }
+    dispatch({ type: RESET_FORM });
+  };
 
-  // 👇 some props are missing in the JSX below:
+  // Handle form submission
+  const onNewQuote = (evt) => {
+    evt.preventDefault();
+    const { authorName, quoteText } = state;
+    createQuote({ authorName, quoteText });
+    resetForm(); // Reset form after submitting
+  };
+
   return (
     <form id="quoteForm" onSubmit={onNewQuote}>
       <h3>New Quote Form</h3>
-      <label><span>Author:</span>
+      
+      <label>
+        <span>Author:</span>
         <input
-          type='text'
-          name='authorName'
-          placeholder='type author name'
+          type="text"
+          name="authorName"
+          placeholder="Type author name"
+          value={state.authorName}
           onChange={onChange}
         />
       </label>
-      <label><span>Quote text:</span>
+      
+      <label>
+        <span>Quote text:</span>
         <textarea
-          type='text'
-          name='quoteText'
-          placeholder='type quote'
+          name="quoteText"
+          placeholder="Type quote"
+          value={state.quoteText}
           onChange={onChange}
         />
       </label>
-      <label><span>Create quote:</span>
-        <button
-          role='submit'
-        >DO IT!</button>
+      
+      <label>
+        <span>Create quote:</span>
+        <button type="submit" disabled={!state.authorName || !state.quoteText}>
+          DO IT!
+        </button>
       </label>
     </form>
-  )
+  );
 }
